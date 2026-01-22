@@ -241,6 +241,10 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        <footer className="mt-16 text-xs text-muted-foreground">
+          <p>This service is for entertainment and informational purposes only. Responses are AI-generated and should not be considered professional financial, legal, or medical advice. Consult appropriate professionals for serious decisions.</p>
+        </footer>
       </div>
     </main>
   );
