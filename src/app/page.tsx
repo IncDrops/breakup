@@ -137,7 +137,7 @@ export default function Home() {
     <main className={cn("flex min-h-screen flex-col items-center p-4 sm:p-8 md:p-12", bodyFontClass)}>
       <div className="z-10 w-full max-w-4xl items-center justify-center text-center">
         <h1 className={cn("text-4xl md:text-6xl font-bold tracking-tight", headlineFontClass)}>
-          It’s Not You, It’s AI.
+          It’s Not You, It’s AI. 💔
         </h1>
         <p className="mt-4 text-lg md:text-xl text-muted-foreground">
           We do the dirty work for $1.
