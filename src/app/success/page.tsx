@@ -22,13 +22,13 @@ const IMessageBubble = ({ text }: { text: string }) => {
   );
 };
 
-const OutlookWindow = ({ text }: { text: string }) => {
+const OutlookWindow = ({ text, recipientName }: { text: string; recipientName?: string }) => {
   return (
     <Card className="max-w-2xl mx-auto font-literata shadow-lg border-2">
       <CardHeader className="border-b bg-secondary/50 p-4">
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">
-            To: <span className="text-foreground">All Staff</span>
+            To: <span className="text-foreground">{recipientName || "Recipient"}</span>
           </p>
           <p className="text-sm text-muted-foreground">
             Subject:{" "}
@@ -143,7 +143,7 @@ function SuccessContent() {
                   <IMessageBubble text={result.text_body} />
                 </div>
               ) : (
-                <OutlookWindow text={result.text_body} />
+                <OutlookWindow text={result.text_body} recipientName={result.recipient_name} />
               )}
               
               <div className="mt-6 flex items-center justify-end space-x-2">

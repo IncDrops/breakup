@@ -19,6 +19,7 @@ export type GenerateBreakupTextInput = z.infer<typeof GenerateBreakupTextInputSc
 const GenerateBreakupTextOutputSchema = z.object({
   text_body: z.string().describe('The generated breakup text message.'),
   follow_up_tip: z.string().describe('A follow-up tip related to the breakup.'),
+  recipient_name: z.string().describe("The name of the person being dumped, or 'Recipient' if no name is found.")
 });
 export type GenerateBreakupTextOutput = z.infer<typeof GenerateBreakupTextOutputSchema>;
 
@@ -61,6 +62,13 @@ MANDATORY STYLE RULES:
 CURRENT REQUEST:
 Persona: {{{persona}}}
 Reason: {{{reason}}}
+
+---
+ADDITIONAL INSTRUCTION FOR ALL MODES:
+Analyze the user's input reason: "{{{reason}}}".
+1. If the user mentioned a specific name (e.g., "Mike," "Jessica," "my bf Tom"), extract just the name (e.g., "Mike", "Jessica", "Tom").
+2. If no name is found, use the word "Recipient".
+3. Return this value in the 'recipient_name' field of the output.
 
 GENERATE THE MESSAGE NOW. ADHERE STRICTLY TO THE STYLE RULES ABOVE.
 `,
