@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -242,8 +243,9 @@ export default function Home() {
           </div>
         )}
 
-        <footer className="mt-16 text-xs text-muted-foreground">
-          <p>This service is for entertainment and satirical purposes only. Responses are AI-generated parody and should not be considered professional relationship, legal, or psychological advice. The 'HR Mode' is a fictional format and does not constitute a valid legal termination of employment or contract. Do not use this service for harassment or in situations involving domestic safety concerns.</p>
+        <footer className="mt-16 text-center text-xs text-muted-foreground">
+          <p className="mb-2">This service is for entertainment and satirical purposes only. Responses are AI-generated parody and should not be considered professional relationship, legal, or psychological advice. The 'HR Mode' is a fictional format and does not constitute a valid legal termination of employment or contract. Do not use this service for harassment or in situations involving domestic safety concerns.</p>
+          <Link href="/privacy" className="hover:underline text-primary">Privacy Policy</Link>
         </footer>
       </div>
     </main>
