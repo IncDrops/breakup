@@ -102,7 +102,7 @@ export default function PrivacyPolicy() {
 
           <section>
             <h2 className="text-2xl font-bold mb-4 text-foreground">11. Changes to Privacy Policy</h2>
-            <p>We may update this policy. Continued use after changes constitutes acceptance of the updated policy</p>
+            <p>We may update this policy. Continued use after changes constitutes acceptance of the updated policy.</p>
           </section>
 
           <section>
