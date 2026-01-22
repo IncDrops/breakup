@@ -17,10 +17,19 @@ export async function generateBreakupTextAction(
 }
 
 export async function createStripeSession(data: { reason: string; persona: string }): Promise<{ sessionId?: string; error?: string }> {
-  if (!process.env.STRIPE_SECRET_KEY || !process.env.NEXT_PUBLIC_APP_URL) {
-      return { error: "Server configuration error. Stripe keys or App URL not set." };
+  const missingVars = [];
+  if (!process.env.STRIPE_SECRET_KEY) {
+    missingVars.push("STRIPE_SECRET_KEY");
+  }
+  if (!process.env.NEXT_PUBLIC_APP_URL) {
+    missingVars.push("NEXT_PUBLIC_APP_URL");
   }
 
+  if (missingVars.length > 0) {
+      const varList = missingVars.join(', ');
+      return { error: `Server configuration error. The following environment variables are missing from your .env.local file: ${varList}. Please ensure the file exists, the variables are set, and you have restarted your development server.` };
+  }
+  
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   
   try {
@@ -58,7 +67,7 @@ export async function createStripeSession(data: { reason: string; persona: strin
 
 export async function retrieveCheckoutSessionAndGenerate(sessionId: string): Promise<{ data?: GenerateBreakupTextOutput; error?: string; persona?: string }> {
     if (!process.env.STRIPE_SECRET_KEY) {
-      return { error: "Server configuration error. Stripe key not set." };
+      return { error: "Server configuration error. The STRIPE_SECRET_KEY environment variable is missing from your .env.local file. Please ensure it is set and restart your development server." };
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);

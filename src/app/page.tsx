@@ -58,49 +58,57 @@ export default function Home() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-      const response = await createStripeSession({
-        reason: values.reason,
-        persona: persona,
-      });
-
-      if (response.error || !response.sessionId) {
-        toast({
-          variant: "destructive",
-          title: "Oops! Payment session error.",
-          description: response.error || "We couldn't create a payment session. Please try again.",
+      try {
+        const response = await createStripeSession({
+          reason: values.reason,
+          persona: persona,
         });
-        return;
-      }
-      
-      if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Stripe publishable key is not available.",
-        });
-        return;
-      }
 
-      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-      
-      if (!stripe) {
+        if (response.error || !response.sessionId) {
           toast({
-              variant: "destructive",
-              title: "Oops! Stripe failed to load.",
-              description: "Please check your internet connection and try again.",
+            variant: "destructive",
+            title: "Oops! Payment session error.",
+            description: response.error || "We couldn't create a payment session. Please try again.",
           });
           return;
-      }
-      
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: response.sessionId,
-      });
+        }
+        
+        if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+          toast({
+            variant: "destructive",
+            title: "Configuration Error",
+            description: "The NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set in your .env.local file. Please add it and restart your development server.",
+          });
+          return;
+        }
 
-      if (error) {
+        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+        
+        if (!stripe) {
+            toast({
+                variant: "destructive",
+                title: "Oops! Stripe failed to load.",
+                description: "Please check your internet connection and try again.",
+            });
+            return;
+        }
+        
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: response.sessionId,
+        });
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Oops! Could not redirect to checkout.",
+            description: error.message || "Please try again.",
+          });
+        }
+      } catch (e: any) {
         toast({
-          variant: "destructive",
-          title: "Oops! Could not redirect to checkout.",
-          description: error.message || "Please try again.",
+            variant: "destructive",
+            title: "An unexpected error occurred.",
+            description: e.message || "Please try again later.",
         });
       }
     });
@@ -165,7 +173,7 @@ export default function Home() {
               <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isPending}>
                 {isPending ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Redirecting to payment...</>
-                ) : "Pay $1 & Generate"}
+                ) : "Generate Breakup Text $1"}
               </Button>
             </form>
           </Form>
