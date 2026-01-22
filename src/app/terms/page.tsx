@@ -174,7 +174,7 @@ export default function TermsOfUse() {
           
           <section>
             <h2 className="text-2xl font-bold mb-4 text-foreground">22. Acknowledgment</h2>
-            <p>By clicking "Pay & Generate" or using the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use and our Privacy Policy.</p>
+            <p>By clicking "Generate Breakup Text" or using the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use and our Privacy Policy.</p>
           </section>
 
         </div>
