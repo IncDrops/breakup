@@ -12,7 +12,11 @@ export async function generateBreakupTextAction(
     return { data: output };
   } catch (e: any) {
     console.error(e);
-    return { error: e.message || "Failed to generate text. The AI might be having an emotional day." };
+    let errorMessage = e.message || "Failed to generate text. The AI might be having an emotional day.";
+    if (e.message && (e.message.includes("API key not valid") || e.message.includes("API key not found"))) {
+        errorMessage = "Google AI API key is invalid or missing. Please ensure your GEMINI_API_KEY in the .env.local file is correct and that you have restarted your development server."
+    }
+    return { error: errorMessage };
   }
 }
 
@@ -91,6 +95,10 @@ export async function retrieveCheckoutSessionAndGenerate(sessionId: string): Pro
 
     } catch(e: any) {
         console.error(e);
-        return { error: e.message || "Failed to process payment result." };
+        let errorMessage = e.message || "Failed to process payment result.";
+        if (e.message && (e.message.includes("API key not valid") || e.message.includes("API key not found"))) {
+            errorMessage = "Google AI API key is invalid or missing. Please ensure your GEMINI_API_KEY in the .env.local file is correct and that you have restarted your development server."
+        }
+        return { error: errorMessage };
     }
 }
