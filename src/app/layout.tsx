@@ -2,10 +2,35 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
+const siteUrl = 'https://enditforme.com';
+
 export const metadata: Metadata = {
-  title: 'End It For Me 💔',
-  description: 'We do the dirty work for $1.',
+  title: 'EndItForMe | It’s Not You, It’s AI.',
+  description: 'Too scared to dump them? We do the dirty work for $1. Generate Toxic or HR-Approved breakup texts instantly.',
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    title: 'EndItForMe | It’s Not You, It’s AI.',
+    description: 'Too scared to dump them? We do the dirty work for $1. Generate Toxic or HR-Approved breakup texts instantly.',
+    url: siteUrl,
+    siteName: 'EndItForMe',
+    images: [
+      {
+        url: '/social-preview.png', // Relative to metadataBase
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'EndItForMe | It’s Not You, It’s AI.',
+    description: 'Too scared to dump them? We do the dirty work for $1. Generate Toxic or HR-Approved breakup texts instantly.',
+    images: [`${siteUrl}/social-preview.png`],
+  },
 };
+
 
 export default function RootLayout({
   children,
