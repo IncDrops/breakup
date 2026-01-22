@@ -243,7 +243,7 @@ export default function Home() {
         )}
 
         <footer className="mt-16 text-xs text-muted-foreground">
-          <p>This service is for entertainment and informational purposes only. Responses are AI-generated and should not be considered professional financial, legal, or medical advice. Consult appropriate professionals for serious decisions.</p>
+          <p>This service is for entertainment and satirical purposes only. Responses are AI-generated parody and should not be considered professional relationship, legal, or psychological advice. The 'HR Mode' is a fictional format and does not constitute a valid legal termination of employment or contract. Do not use this service for harassment or in situations involving domestic safety concerns.</p>
         </footer>
       </div>
     </main>
