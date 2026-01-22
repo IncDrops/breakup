@@ -79,6 +79,11 @@ export async function retrieveCheckoutSessionAndGenerate(sessionId: string): Pro
     
     try {
         const session = await stripe.checkout.sessions.retrieve(sessionId);
+        
+        // Idempotency check: Has this session already been processed?
+        if (session.metadata?.generated === 'true') {
+            return { error: "This breakup has already been generated. Please start a new one if you'd like to try again." };
+        }
 
         if (session.payment_status !== 'paid') {
             return { error: "Payment was not successful." };
@@ -92,6 +97,12 @@ export async function retrieveCheckoutSessionAndGenerate(sessionId: string): Pro
         }
 
         const output = await generateBreakupText({ reason, persona });
+
+        // Mark the session as processed to prevent re-generation
+        await stripe.checkout.sessions.update(sessionId, {
+            metadata: { ...session.metadata, generated: 'true' }
+        });
+        
         return { data: output, persona: persona };
 
     } catch(e: any) {
