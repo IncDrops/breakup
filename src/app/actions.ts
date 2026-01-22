@@ -14,7 +14,7 @@ export async function generateBreakupTextAction(
     console.error(e);
     let errorMessage = e.message || "Failed to generate text. The AI might be having an emotional day.";
     if (e.message && (e.message.includes("API key not valid") || e.message.includes("API key not found"))) {
-        errorMessage = "Google AI API key is invalid or missing. Please ensure your GEMINI_API_KEY in the .env.local file is correct and that you have restarted your development server."
+        errorMessage = "Google AI API key is invalid or missing. If you're running locally, ensure your GEMINI_API_KEY is set in your .env.local file and that you've restarted your development server. For a live site, you must set this as a secret in your hosting environment."
     }
     return { error: errorMessage };
   }
@@ -31,7 +31,8 @@ export async function createStripeSession(data: { reason: string; persona: strin
 
   if (missingVars.length > 0) {
       const varList = missingVars.join(', ');
-      return { error: `Server configuration error. The following environment variables are missing from your .env.local file: ${varList}. Please ensure the file exists, the variables are set, and you have restarted your development server.` };
+      const message = `Server configuration error. The following environment variables are missing: ${varList}. If running locally, check your .env.local file and restart the server. For a live site, ensure these are set as secrets in your hosting environment.`;
+      return { error: message };
   }
   
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -71,7 +72,7 @@ export async function createStripeSession(data: { reason: string; persona: strin
 
 export async function retrieveCheckoutSessionAndGenerate(sessionId: string): Promise<{ data?: GenerateBreakupTextOutput; error?: string; persona?: string }> {
     if (!process.env.STRIPE_SECRET_KEY) {
-      return { error: "Server configuration error. The STRIPE_SECRET_KEY environment variable is missing from your .env.local file. Please ensure it is set and restart your development server." };
+      return { error: "Server configuration error. STRIPE_SECRET_KEY is missing. If running locally, check your .env.local file and restart the server. For a live site, ensure this is set as a secret in your hosting environment." };
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -97,7 +98,7 @@ export async function retrieveCheckoutSessionAndGenerate(sessionId: string): Pro
         console.error(e);
         let errorMessage = e.message || "Failed to process payment result.";
         if (e.message && (e.message.includes("API key not valid") || e.message.includes("API key not found"))) {
-            errorMessage = "Google AI API key is invalid or missing. Please ensure your GEMINI_API_KEY in the .env.local file is correct and that you have restarted your development server."
+            errorMessage = "Google AI API key is invalid or missing. If you're running locally, ensure your GEMINI_API_KEY is set in your .env.local file and that you've restarted your development server. For a live site, you must set this as a secret in your hosting environment."
         }
         return { error: errorMessage };
     }
