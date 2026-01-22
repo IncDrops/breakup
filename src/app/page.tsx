@@ -246,6 +246,8 @@ export default function Home() {
         <footer className="mt-16 text-center text-xs text-muted-foreground">
           <p className="mb-2">This service is for entertainment and satirical purposes only. Responses are AI-generated parody and should not be considered professional relationship, legal, or psychological advice. The 'HR Mode' is a fictional format and does not constitute a valid legal termination of employment or contract. Do not use this service for harassment or in situations involving domestic safety concerns.</p>
           <Link href="/privacy" className="hover:underline text-primary">Privacy Policy</Link>
+          <span className="mx-2">|</span>
+          <Link href="/terms" className="hover:underline text-primary">Terms of Use</Link>
         </footer>
       </div>
     </main>
