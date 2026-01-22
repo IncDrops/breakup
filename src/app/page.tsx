@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { loadStripe } from '@stripe/stripe-js';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,11 +19,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { generateBreakupTextAction } from "./actions";
-import type { GenerateBreakupTextOutput } from "@/ai/flows/generate-breakup-text";
-import { Briefcase, Download, Flame, Loader2, MessageCircleWarning, Copy, Check } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { createStripeSession } from "./actions";
+import { Briefcase, Flame, Loader2 } from "lucide-react";
 
 type Persona = "toxic" | "hr";
 
@@ -37,45 +35,9 @@ const formSchema = z.object({
     }),
 });
 
-const IMessageBubble = ({ text }: { text: string }) => {
-  return (
-    <div className="w-full flex justify-end">
-      <div className="bg-blue-600 text-white p-3 rounded-2xl max-w-md">
-        <p className="text-left text-base">{text}</p>
-      </div>
-    </div>
-  );
-};
-
-const OutlookWindow = ({ text }: { text: string }) => {
-  return (
-    <Card className="max-w-2xl mx-auto font-literata shadow-lg border-2">
-      <CardHeader className="border-b bg-secondary/50 p-4">
-        <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">
-            To: <span className="text-foreground">All Staff</span>
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Subject:{" "}
-            <span className="text-foreground font-semibold">
-              Regarding Your Employment Status
-            </span>
-          </p>
-        </div>
-      </CardHeader>
-      <CardContent className="p-6">
-        <p className="whitespace-pre-wrap text-sm">{text}</p>
-      </CardContent>
-    </Card>
-  );
-};
-
-
 export default function Home() {
   const [persona, setPersona] = useState<Persona>("toxic");
   const [isPending, startTransition] = useTransition();
-  const [result, setResult] = useState<GenerateBreakupTextOutput | null>(null);
-  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -93,40 +55,53 @@ export default function Home() {
     }
   }, [persona]);
   
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
-  const handleDownload = (text: string) => {
-    const blob = new Blob([text], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `end-it-for-me-${persona}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setResult(null);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-      const result = await generateBreakupTextAction({
+      const response = await createStripeSession({
         reason: values.reason,
         persona: persona,
       });
 
-      if (result.error) {
+      if (response.error || !response.sessionId) {
         toast({
           variant: "destructive",
-          title: "Uh oh! Something went wrong.",
-          description: result.error,
+          title: "Oops! Payment session error.",
+          description: response.error || "We couldn't create a payment session. Please try again.",
         });
-      } else {
-        setResult(result.data);
+        return;
+      }
+      
+      if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Stripe publishable key is not available.",
+        });
+        return;
+      }
+
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+      
+      if (!stripe) {
+          toast({
+              variant: "destructive",
+              title: "Oops! Stripe failed to load.",
+              description: "Please check your internet connection and try again.",
+          });
+          return;
+      }
+      
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: response.sessionId,
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Oops! Could not redirect to checkout.",
+          description: error.message || "Please try again.",
+        });
       }
     });
   }
@@ -189,59 +164,12 @@ export default function Home() {
               />
               <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isPending}>
                 {isPending ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
-                ) : "Generate Breakup Text"}
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Redirecting to payment...</>
+                ) : "Pay $1 & Generate"}
               </Button>
             </form>
           </Form>
         </div>
-
-        {isPending && (
-           <div className="mt-12 w-full text-center">
-             <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-             <p className="mt-4 text-muted-foreground">Crafting the perfect ending...</p>
-           </div>
-        )}
-
-        {result && (
-          <div className="mt-12 w-full animate-in fade-in-50 slide-in-from-bottom-5 duration-500">
-            <h2 className={cn("text-3xl font-bold text-center mb-6", headlineFontClass)}>Your Breakup Is Served</h2>
-            
-            <div className="bg-card p-6 rounded-lg shadow-xl border">
-              {persona === 'toxic' ? (
-                <div className="bg-black p-4 rounded-lg">
-                  <IMessageBubble text={result.text_body} />
-                </div>
-              ) : (
-                <OutlookWindow text={result.text_body} />
-              )}
-              
-              <div className="mt-6 flex items-center justify-end space-x-2">
-                 <Button variant="ghost" size="icon" onClick={() => handleCopy(result.text_body)}>
-                    {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                    <span className="sr-only">Copy text</span>
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDownload(result.text_body)}>
-                    <Download className="h-4 w-4" />
-                    <span className="sr-only">Download text</span>
-                  </Button>
-              </div>
-
-              <Separator className="my-6" />
-
-              <div className="bg-accent/20 border-l-4 border-accent p-4 rounded-r-lg">
-                <div className="flex">
-                  <div className="py-1"><MessageCircleWarning className="h-5 w-5 text-accent-foreground/80 mr-3" /></div>
-                  <div>
-                    <h3 className="font-bold text-accent-foreground">Pro Tip</h3>
-                    <p className="text-sm text-accent-foreground/80">{result.follow_up_tip}</p>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        )}
 
         <footer className="mt-16 text-center text-xs text-muted-foreground">
           <p className="mb-2">This service is for entertainment and satirical purposes only. Responses are AI-generated parody and should not be considered professional relationship, legal, or psychological advice. The 'HR Mode' is a fictional format and does not constitute a valid legal termination of employment or contract. Do not use this service for harassment or in situations involving domestic safety concerns.</p>
